@@ -55,6 +55,16 @@ int main(int argc, char **argv)
 
 		// Here increment happens in next iteration, this is like `allCharacters[used++] = ch`
 		allCharacters[used++] = ch;
+
+		// increment position of x for every character
+		cursorPositonX++;
+
+		bool isNewLine = ch == '\n';
+		if (isNewLine)
+		{
+			cursorPositonY++;
+			cursorPositonX = 0;
+		}
 	}
 
 	// Add a null terminator to make it a proper C string
