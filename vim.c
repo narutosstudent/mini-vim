@@ -2,11 +2,49 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 
-const char *ARROW_UP = "\033[A";
-const char *ARROW_DOWN = "\033[B";
-const char *ARROW_RIGHT = "\033[C";
-const char *ARROW_LEFT = "\033[D";
+// Function to read arrow key input
+bool readArrowKeyInput(int *cursorPositionX, int *cursorPositionY, size_t lineCount, size_t totalLength)
+{
+	int ch1, ch2, ch3;
+	ch1 = getchar();
+	if (ch1 == EOF || ch1 != '\033')
+	{
+		return false; // Not an escape sequence
+	}
+
+	ch2 = getchar();
+	if (ch2 != '[')
+	{
+		return false; // Not an arrow key sequence
+	}
+
+	ch3 = getchar(); // This should be one of A, B, C, or D
+	switch (ch3)
+	{
+	case 'A': // Up
+		if (*cursorPositionY > 0)
+			*cursorPositionY -= 1;
+		break;
+	case 'B': // Down
+		if (*cursorPositionY < lineCount)
+			*cursorPositionY += 1;
+		break;
+	case 'C': // Right
+		if (*cursorPositionX < totalLength)
+			*cursorPositionX += 1;
+		break;
+	case 'D': // Left
+		if (*cursorPositionX > 0)
+			*cursorPositionX -= 1;
+		break;
+	default:
+		return false; // Not an arrow key
+	}
+
+	return true;
+}
 
 int main(int argc, char **argv)
 {
@@ -96,65 +134,31 @@ int main(int argc, char **argv)
 	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
 
-	// Loop that waits user input, uses getchar, if q is pressed, exit, use usleep to sleep for 1ms to not use 100% cpu
-	printf("Instructions: By pressing q, you exited the program\n");
-
 	while (1)
 	{
-		// now we have to read multiple characters and also recognize arrow keys, up, down, left and right, we can not only read one character
+		printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
+		printf("Enter command (q to quit, arrow keys to move): ");
 
-		// we also have to prevent cursor from going out of bounds (with our cursor position x and y), we have to keep track of cursor position
-
-		char *input = malloc(10);
-		fgets(input, 3, stdin);
-
-		if (strcmp(input, "q\n") == 0)
+		int ch = getchar();
+		if (ch == 'q')
 		{
 			break;
 		}
-		else if (strcmp(input, "q\n") == 0)
+		else if (ch == '\033')
 		{
-		}
-		else if (strcmp(input, ARROW_UP) == 0)
-		{
-			if (cursorPositonY == 0)
+			// Put back the escape character and handle arrow key input
+			ungetc(ch, stdin);
+			if (!readArrowKeyInput(&cursorPositonX, &cursorPositonY, lineCount, strlen(allCharacters)))
 			{
-				continue;
+				printf("Invalid input!\n");
 			}
-			cursorPositonY--;
-		}
-		else if (strcmp(input, ARROW_DOWN) == 0)
-		{
-			if (cursorPositonY == lineCount)
-			{
-				continue;
-			}
-			cursorPositonY++;
-		}
-		else if (strcmp(input, ARROW_LEFT) == 0)
-		{
-			if (cursorPositonX == 0)
-			{
-				continue;
-			}
-
-			cursorPositonX--;
-		}
-		else if (strcmp(input, ARROW_RIGHT) == 0)
-		{
-			if (cursorPositonX == strlen(allCharacters))
-			{
-				continue;
-			}
-			cursorPositonX++;
 		}
 		else
 		{
-			perror("Error reading input");
-			free(allCharacters);
-			fclose(file);
-			return 1;
+			printf("Unknown command\n");
 		}
+
+		usleep(1000);
 	}
 
 	// Cleanup
