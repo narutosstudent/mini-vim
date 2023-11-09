@@ -19,6 +19,9 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	int cursorPositonX = 0;
+	int cursorPositonY = 0;
+
 	// Start with an initial size and grow as needed
 	size_t size = 1024;
 	size_t used = 0;
