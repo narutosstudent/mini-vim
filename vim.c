@@ -89,6 +89,19 @@ int main(int argc, char **argv)
 	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
 
+	// Loop that waits user input, uses getchar, if q is pressed, exit, use usleep to sleep for 1ms to not use 100% cpu
+	printf("Instructions: By pressing q, you exited the program\n");
+
+	while (1)
+	{
+		char c = getchar();
+		if (c == 'q')
+		{
+			break;
+		}
+		usleep(1000);
+	}
+
 	// Cleanup
 	free(allCharacters);
 	fclose(file);
