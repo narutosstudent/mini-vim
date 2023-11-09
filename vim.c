@@ -67,7 +67,7 @@ int main(int argc, char **argv)
 
 	// Start with an initial size and grow as needed
 	size_t size = 1024;
-	size_t usedSize = 0;
+	size_t usedCharactersSize = 0;
 	size_t lineCount = 0;
 	char *allCharacters = malloc(size);
 
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 	while ((ch = fgetc(file)) != EOF)
 	{
 		// Resize the buffer if necessary
-		if (usedSize == size)
+		if (usedCharactersSize == size)
 		{
 			// Double the size
 			size *= 2;
@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 		}
 
 		// Here increment happens in next iteration, this is like `allCharacters[used++] = ch`
-		allCharacters[usedSize++] = ch;
+		allCharacters[usedCharactersSize++] = ch;
 
 		// increment position of x for every character
 		cursorPositonX++;
@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 	}
 
 	// Add a null terminator to make it a proper C string
-	if (usedSize == size)
+	if (usedCharactersSize == size)
 	{
 		// newBuffer to make sure realloc was successful
 		char *newBuffer = realloc(allCharacters, size + 1);
@@ -126,19 +126,13 @@ int main(int argc, char **argv)
 		}
 		allCharacters = newBuffer;
 	}
-	allCharacters[usedSize] = '\0';
-
-	// Use the string as needed
-	printf("File content:\n%s", allCharacters);
+	allCharacters[usedCharactersSize] = '\0';
 
 	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
 
 	while (1)
 	{
-		printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
-		printf("Enter command (q to quit, arrow keys to move): ");
-
 		int ch = getchar();
 		if (ch == 'q')
 		{
@@ -157,6 +151,15 @@ int main(int argc, char **argv)
 		{
 			printf("Unknown command\n");
 		}
+
+		// Clear the screen
+		system("clear"); // Use "cls" on Windows
+
+		// Redraw the entire buffer
+		printf("%s", allCharacters);
+
+		// Print the cursor position
+		printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
 
 		usleep(1000);
 	}
