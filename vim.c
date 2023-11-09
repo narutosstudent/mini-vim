@@ -86,6 +86,7 @@ int main(int argc, char **argv)
 	// Use the string as needed
 	printf("File content:\n%s", allCharacters);
 
+	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
 
 	// Cleanup
