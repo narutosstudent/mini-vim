@@ -86,6 +86,8 @@ int main(int argc, char **argv)
 	// Use the string as needed
 	printf("File content:\n%s", allCharacters);
 
+	fflush(stdout);
+
 	// Cleanup
 	free(allCharacters);
 	fclose(file);
