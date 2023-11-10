@@ -46,6 +46,53 @@ bool readArrowKeyInput(int *cursorPositionX, int *cursorPositionY, size_t lineCo
 	return true;
 }
 
+int handleReadingFileCharacters(FILE *file, char **allCharacters, size_t *size, size_t *usedCharactersSize, size_t *lineCount, int *cursorPositonX, int *cursorPositonY)
+{
+	int ch;
+	while ((ch = fgetc(file)) != EOF)
+	{
+		if (*usedCharactersSize == *size)
+		{
+			*size *= 2;
+			char *newBuffer = realloc(*allCharacters, *size);
+			if (newBuffer == NULL)
+			{
+				perror("Error reallocating memory");
+				free(*allCharacters);
+				fclose(file);
+				return 1;
+			}
+			*allCharacters = newBuffer;
+		}
+
+		(*allCharacters)[(*usedCharactersSize)++] = ch;
+
+		(*cursorPositonX)++;
+
+		if (ch == '\n')
+		{
+			(*lineCount)++;
+			(*cursorPositonY)++;
+			*cursorPositonX = 0;
+		}
+	}
+
+	if (*usedCharactersSize == *size)
+	{
+		char *newBuffer = realloc(*allCharacters, *size + 1);
+		if (newBuffer == NULL)
+		{
+			perror("Error reallocating memory for null terminator");
+			free(*allCharacters);
+			fclose(file);
+			return 1;
+		}
+		*allCharacters = newBuffer;
+	}
+	(*allCharacters)[*usedCharactersSize] = '\0';
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	if (argc != 2)
@@ -78,55 +125,13 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	int ch;
-	while ((ch = fgetc(file)) != EOF)
+	int result = handleReadingFileCharacters(file, &allCharacters, &size, &usedCharactersSize, &lineCount, &cursorPositonX, &cursorPositonY);
+
+	if (result != 0)
 	{
-		// Resize the buffer if necessary
-		if (usedCharactersSize == size)
-		{
-			// Double the size
-			size *= 2;
-			char *newBuffer = realloc(allCharacters, size);
-			if (newBuffer == NULL)
-			{
-				perror("Error reallocating memory");
-				free(allCharacters);
-				fclose(file);
-				return 1;
-			}
-			allCharacters = newBuffer;
-		}
-
-		// Here increment happens in next iteration, this is like `allCharacters[used++] = ch`
-		allCharacters[usedCharactersSize++] = ch;
-
-		// increment position of x for every character
-		cursorPositonX++;
-
-		bool isNewLine = ch == '\n';
-		if (isNewLine)
-		{
-			lineCount++;
-			cursorPositonY++;
-			cursorPositonX = 0;
-		}
+		perror("Error reading file");
+		return 1;
 	}
-
-	// Add a null terminator to make it a proper C string
-	if (usedCharactersSize == size)
-	{
-		// newBuffer to make sure realloc was successful
-		char *newBuffer = realloc(allCharacters, size + 1);
-		if (newBuffer == NULL)
-		{
-			perror("Error reallocating memory for null terminator");
-			free(allCharacters);
-			fclose(file);
-			return 1;
-		}
-		allCharacters = newBuffer;
-	}
-	allCharacters[usedCharactersSize] = '\0';
 
 	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
