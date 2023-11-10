@@ -161,8 +161,23 @@ int main(int argc, char **argv)
 		system("clear");  // Use "cls" on Windows
 		printf("\033[H"); // This ANSI escape code moves the cursor to the top-left corner
 
-		// Redraw the entire buffer
-		printf("%s", allCharacters);
+		// Print the line numbers
+		int lineNumber = 1;
+		printf("%d ", lineNumber);
+
+		// Redraw the entire buffer character by character
+		for (size_t i = 0; i < usedCharactersSize; ++i)
+		{
+			if (allCharacters[i] == '\n' && i < usedCharactersSize - 1)
+			{
+				printf("\n");
+				printf("%d ", ++lineNumber);
+			}
+			else
+			{
+				putchar(allCharacters[i]);
+			}
+		}
 
 		// Print the cursor position
 		printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
