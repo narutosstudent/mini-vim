@@ -153,7 +153,8 @@ int main(int argc, char **argv)
 		}
 
 		// Clear the screen
-		system("clear"); // Use "cls" on Windows
+		system("clear");  // Use "cls" on Windows
+		printf("\033[H"); // This ANSI escape code moves the cursor to the top-left corner
 
 		// Redraw the entire buffer
 		printf("%s", allCharacters);
