@@ -93,6 +93,32 @@ int handleReadingFileCharacters(FILE *file, char **allCharacters, size_t *size, 
 	return 0;
 }
 
+void redrawScreen(const char *allCharacters, size_t usedCharactersSize, int lineNumber, int cursorPositonX, int cursorPositonY)
+{
+	system("clear");  // Use "cls" on Windows
+	printf("\033[H"); // This ANSI escape code moves the cursor to the top-left corner
+
+	// Print the line numbers
+	printf("%d ", lineNumber);
+
+	// Redraw the entire buffer character by character
+	for (size_t i = 0; i < usedCharactersSize; ++i)
+	{
+		if (allCharacters[i] == '\n' && i < usedCharactersSize - 1)
+		{
+			printf("\n");
+			printf("%d ", ++lineNumber);
+		}
+		else
+		{
+			putchar(allCharacters[i]);
+		}
+	}
+
+	// Print the cursor position
+	printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
+}
+
 int main(int argc, char **argv)
 {
 	if (argc != 2)
@@ -136,52 +162,43 @@ int main(int argc, char **argv)
 	// ensures that all output in the stream is sent to the console
 	fflush(stdout);
 
+	// Initial redraw of the screen
+	redrawScreen(allCharacters, usedCharactersSize, 1, cursorPositonX, cursorPositonY);
+
 	while (1)
 	{
 		int ch = getchar();
+		bool shouldRedraw = false;
 		if (ch == 'q')
 		{
 			break;
 		}
 		else if (ch == '\033')
 		{
-			// Put back the escape character and handle arrow key input
 			ungetc(ch, stdin);
 			if (!readArrowKeyInput(&cursorPositonX, &cursorPositonY, lineCount, strlen(allCharacters)))
 			{
-				printf("Invalid input!\n");
+				while ((ch = getchar()) != EOF && ch != 'A' && ch != 'B' && ch != 'C' && ch != 'D')
+				{
+					// Consume the rest of the escape sequence
+				}
+				printf("\nInvalid input!\n");
 			}
+			shouldRedraw = true;
+		}
+		else if (ch == '\n')
+		{
+			shouldRedraw = true; // Simply redraw without doing anything else
 		}
 		else
 		{
-			printf("Unknown command\n");
+			printf("\nUnknown command\n");
 		}
 
-		// Clear the screen
-		system("clear");  // Use "cls" on Windows
-		printf("\033[H"); // This ANSI escape code moves the cursor to the top-left corner
-
-		// Print the line numbers
-		int lineNumber = 1;
-		printf("%d ", lineNumber);
-
-		// Redraw the entire buffer character by character
-		for (size_t i = 0; i < usedCharactersSize; ++i)
+		if (shouldRedraw)
 		{
-			if (allCharacters[i] == '\n' && i < usedCharactersSize - 1)
-			{
-				printf("\n");
-				printf("%d ", ++lineNumber);
-			}
-			else
-			{
-				putchar(allCharacters[i]);
-			}
+			redrawScreen(allCharacters, usedCharactersSize, 1, cursorPositonX, cursorPositonY);
 		}
-
-		// Print the cursor position
-		printf("\nCursor Position: (%d, %d)\n", cursorPositonX, cursorPositonY);
-
 		usleep(1000);
 	}
 
